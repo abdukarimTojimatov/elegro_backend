@@ -1,34 +1,33 @@
-import Transaction from "../models/transaction.model.js";
+import Transaction from '../models/transaction.model.js';
 
 const transactionResolver = {
   Query: {
     transactions: async (_, __, context) => {
       try {
-        if (!context.getUser()) throw new Error("Unauthorized");
+        if (!context.getUser()) throw new Error('Unauthorized');
         const userId = await context.getUser()._id;
 
         const transactions = await Transaction.find({ userId });
         return transactions;
       } catch (err) {
-        console.error("Error getting transactions:", err);
-        throw new Error("Error getting transactions");
+        console.error('Error getting transactions:', err);
+        throw new Error('Error getting transactions');
       }
     },
     transaction: async (_, { transactionId }) => {
       try {
         const transaction = await Transaction.findById(transactionId);
         if (!transaction) {
-          throw new Error("not found transaction");
+          throw new Error('not found transaction');
         }
         return transaction;
       } catch (err) {
-        console.error("Error getting transaction:", err);
-        throw new Error("Error getting transaction");
+        console.error('Error getting transaction:', err);
+        throw new Error('Error getting transaction');
       }
     },
-
     categoryStatistics: async (_, __, context) => {
-      if (!context.getUser()) throw new Error("Unauthorized");
+      if (!context.getUser()) throw new Error('Unauthorized');
 
       const userId = context.getUser()._id;
       const transactions = await Transaction.find({ userId });
@@ -62,19 +61,19 @@ const transactionResolver = {
     //
     createTransaction: async (_, { input }, context) => {
       try {
-        console.log("1");
+        console.log('1');
         const newTransaction = new Transaction({
           ...input,
           userId: context.getUser()._id,
         });
-        console.log("2");
-        console.log("newTransaction", newTransaction);
+        console.log('2');
+        console.log('newTransaction', newTransaction);
         await newTransaction.save();
-        console.log("3");
+        console.log('3');
         return newTransaction;
       } catch (err) {
-        console.error("Error creating transaction:", err);
-        throw new Error("Error crea");
+        console.error('Error creating transaction:', err);
+        throw new Error('Error crea');
       }
     },
     //
@@ -87,20 +86,19 @@ const transactionResolver = {
         );
         return updatedTransaction;
       } catch (err) {
-        cosole.error("Error updating transaction:", err);
-        throw new Error("Error updating transaction");
+        cosole.error('Error updating transaction:', err);
+        throw new Error('Error updating transaction');
       }
     },
     //
     deleteTransaction: async (_, { transactionId }) => {
       try {
-        const deletedTransaction = await Transaction.findByIdAndDelete(
-          transactionId
-        );
+        const deletedTransaction =
+          await Transaction.findByIdAndDelete(transactionId);
         return deletedTransaction;
       } catch (err) {
-        console.error("Error on deleting transaction:", err);
-        throw new Error("Error deleting transaction");
+        console.error('Error on deleting transaction:', err);
+        throw new Error('Error deleting transaction');
       }
     },
   },
