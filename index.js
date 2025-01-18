@@ -73,7 +73,7 @@ const frontendOrigin = isProduction
 app.use(
   '/graphql',
   cors({
-    origin: '*',
+    origin: 'http://91.108.122.60:3002', // Adjust to your front-end origin
     credentials: true,
   }),
   express.json(),
