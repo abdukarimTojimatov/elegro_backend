@@ -8,15 +8,17 @@ const orderResolver = {
         const userId = await context.getUser()._id;
 
         const orders = await Order.find({ userId });
+
         return orders;
       } catch (err) {
         console.error('Error getting orders:', err);
         throw new Error('Error getting orders');
       }
     },
-    order: async (_, { orderId }) => {
+    order: async (_, { id }) => {
       try {
-        const order = await Order.findById(orderId);
+        console.log('id', id);
+        const order = await Order.findById(id);
         if (!order) {
           throw new Error('not found order');
         }
@@ -61,9 +63,10 @@ const orderResolver = {
     //
     createOrder: async (_, { input }, context) => {
       try {
+        console.log('3');
         if (!context.getUser()) throw new Error('Unauthorized');
-
         console.log('1');
+        console.log('input', input);
         const newOrder = new Order({
           ...input,
           userId: context.getUser()._id,
