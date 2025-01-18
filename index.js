@@ -65,11 +65,16 @@ const server = new ApolloServer({
 
 await server.start();
 
-// 6. Apply middleware
+// Determine the origin based on the environment
+const isProduction = process.env.NODE_ENV === 'production';
+const frontendOrigin = isProduction
+  ? 'http://YOUR_IP_ADDRESS:3002'
+  : 'http://localhost:3002';
+
 app.use(
   '/graphql',
   cors({
-    origin: 'http://localhost:3000', // Adjust to your front-end origin
+    origin: frontendOrigin, // Adjust to your front-end origin
     credentials: true,
   }),
   express.json(),
