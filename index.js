@@ -65,10 +65,9 @@ const server = new ApolloServer({
 
 await server.start();
 
-// Determine the origin based on the environment
 const isProduction = process.env.NODE_ENV === 'production';
 const frontendOrigin = isProduction
-  ? 'http://YOUR_IP_ADDRESS:3002'
+  ? 'http://91.108.122.60:3002'
   : 'http://localhost:3002';
 
 app.use(
