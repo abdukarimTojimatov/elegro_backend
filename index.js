@@ -130,37 +130,17 @@ const startServer = async () => {
   try {
     await server.start();
 
-    const allowedOrigins = [
-      'http://91.108.122.60:3002/',
-      'http://localhost:3002',
-      'http://91.108.122.60',
-      'http://localhost:3000',
-    ];
+    const frontendOrigin = isProduction
+      ? 'http://91.108.122.60:3002/'
+      : 'http://localhost:3002';
 
     // Apply middleware
     app.use(
       '/graphql',
-      requestLogger,
+      requestLogger, // Add request logging middleware
       cors({
-        origin: function (origin, callback) {
-          // Allow requests with no origin (like mobile apps or curl requests)
-          if (!origin) return callback(null, true);
-
-          if (allowedOrigins.indexOf(origin) !== -1) {
-            callback(null, true);
-          } else {
-            console.log('Blocked origin:', origin);
-            callback(new Error('Not allowed by CORS'));
-          }
-        },
+        origin: [frontendOrigin],
         credentials: true,
-        methods: ['POST', 'OPTIONS'],
-        allowedHeaders: [
-          'Content-Type',
-          'Authorization',
-          'X-Requested-With',
-          'Accept',
-        ],
       }),
       express.json(),
       expressMiddleware(server, {
