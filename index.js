@@ -24,43 +24,6 @@ const app = express();
 const httpServer = http.createServer(app);
 const isProduction = process.env.NODE_ENV === 'production';
 
-// Request logging middleware
-const requestLogger = (req, res, next) => {
-  const timestamp = new Date().toISOString();
-  const { method, originalUrl, body, headers } = req;
-
-  console.log('\n🔍 New Request -----------------------------');
-  console.log(`⏰ Timestamp: ${timestamp}`);
-  console.log(`📍 Endpoint: ${method} ${originalUrl}`);
-  console.log('🔒 Headers:', {
-    origin: headers.origin,
-    'content-type': headers['content-type'],
-    authorization: headers.authorization ? 'Present' : 'None',
-  });
-
-  if (body.query) {
-    console.log('📝 GraphQL Query:', body.query.replace(/\s+/g, ' ').trim());
-    if (body.variables) {
-      console.log('🔧 Variables:', JSON.stringify(body.variables, null, 2));
-    }
-  }
-
-  console.log('--------------------------------------------\n');
-
-  // Add response logging
-  const oldSend = res.send;
-  res.send = function (data) {
-    console.log(
-      '📤 Response:',
-      data.substring(0, 200) + (data.length > 200 ? '...' : '')
-    );
-    console.log('--------------------------------------------\n');
-    oldSend.apply(res, arguments);
-  };
-
-  next();
-};
-
 // Configure session store
 const MongoDBStore = connectMongo(session);
 const store = new MongoDBStore({
@@ -103,24 +66,11 @@ app.use(passport.session());
 const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
-  plugins: [
-    ApolloServerPluginDrainHttpServer({ httpServer }),
-    {
-      requestDidStart: async (requestContext) => {
-        return {
-          willSendResponse: async (requestContext) => {
-            console.log(
-              '🏁 Operation completed:',
-              requestContext.operationName || 'Anonymous Operation'
-            );
-          },
-        };
-      },
-    },
-  ],
-  introspection: isProduction,
+  plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  introspection: isProduction, // Only allow introspection in production
   formatError: (error) => {
-    console.error('❌ GraphQL Error:', error);
+    console.error('GraphQL Error:', error);
+    // In production, you might want to sanitize the error message
     return isProduction ? { message: 'Internal server error' } : error;
   },
 });
@@ -131,13 +81,12 @@ const startServer = async () => {
     await server.start();
 
     const frontendOrigin = isProduction
-      ? 'http://91.108.122.60:3002/'
+      ? 'http://91.108.122.60:3002'
       : 'http://localhost:3002';
 
     // Apply middleware
     app.use(
       '/graphql',
-      requestLogger, // Add request logging middleware
       cors({
         origin: [frontendOrigin],
         credentials: true,
@@ -158,7 +107,6 @@ const startServer = async () => {
       app.use('/graphql', (req, res, next) => {
         const query = req.body.query || '';
         if (query.includes('__schema') || query.includes('__type')) {
-          console.log('🚫 Blocked introspection query in development');
           return res.status(403).json({
             errors: [
               {
@@ -176,13 +124,11 @@ const startServer = async () => {
     await connectDB();
     await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
-    console.log(`\n🚀 Server ready at http://localhost:4000/graphql`);
-    console.log(
-      `🌍 Environment: ${isProduction ? 'Production' : 'Development'}`
-    );
-    console.log(`🔍 Introspection: ${isProduction ? 'Enabled' : 'Disabled'}\n`);
+    console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+    console.log(`Environment: ${isProduction ? 'Production' : 'Development'}`);
+    console.log(`Introspection: ${isProduction ? 'Enabled' : 'Disabled'}`);
   } catch (error) {
-    console.error('❌ Failed to start server:', error);
+    console.error('Failed to start server:', error);
     process.exit(1);
   }
 };
