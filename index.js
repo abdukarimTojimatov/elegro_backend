@@ -88,7 +88,8 @@ const startServer = async () => {
     app.use(
       '/graphql',
       cors({
-        origin: [frontendOrigin],
+        // origin: 'http://91.108.122.60:3002',
+        origin: 'http://localhost:3002',
         credentials: true,
       }),
       express.json(),
