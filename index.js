@@ -22,6 +22,7 @@ dotenv.config();
 const __dirname = path.resolve();
 const app = express();
 const httpServer = http.createServer(app);
+const isProduction = process.env.NODE_ENV === 'production';
 
 // Configure session store
 const MongoDBStore = connectMongo(session);
@@ -51,8 +52,8 @@ app.use(
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production', // Enable in production
-      sameSite: 'lax', // Helps prevent CSRF
+      secure: isProduction,
+      sameSite: 'lax',
     },
   })
 );
@@ -61,15 +62,16 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Create Apollo Server
+// Create Apollo Server with production-only introspection
 const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  introspection: true, // Enable introspection explicitly
+  introspection: isProduction, // Only allow introspection in production
   formatError: (error) => {
     console.error('GraphQL Error:', error);
-    return error;
+    // In production, you might want to sanitize the error message
+    return isProduction ? { message: 'Internal server error' } : error;
   },
 });
 
@@ -78,7 +80,6 @@ const startServer = async () => {
   try {
     await server.start();
 
-    const isProduction = process.env.NODE_ENV === 'production';
     const frontendOrigin = isProduction
       ? 'http://91.108.122.60:3002'
       : 'http://localhost:3002';
@@ -87,7 +88,7 @@ const startServer = async () => {
     app.use(
       '/graphql',
       cors({
-        origin: [frontendOrigin, 'http://localhost:3000'],
+        origin: [frontendOrigin],
         credentials: true,
       }),
       express.json(),
@@ -96,15 +97,36 @@ const startServer = async () => {
           ...buildContext({ req, res }),
           req,
           res,
+          isProduction,
         }),
       })
     );
+
+    // Add a middleware to block introspection queries in non-production
+    if (!isProduction) {
+      app.use('/graphql', (req, res, next) => {
+        const query = req.body.query || '';
+        if (query.includes('__schema') || query.includes('__type')) {
+          return res.status(403).json({
+            errors: [
+              {
+                message:
+                  'GraphQL introspection is disabled in development environment',
+              },
+            ],
+          });
+        }
+        next();
+      });
+    }
 
     // Connect to MongoDB and start server
     await connectDB();
     await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
     console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+    console.log(`Environment: ${isProduction ? 'Production' : 'Development'}`);
+    console.log(`Introspection: ${isProduction ? 'Enabled' : 'Disabled'}`);
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
