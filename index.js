@@ -14,7 +14,7 @@ import mergedResolvers from './resolvers/index.js';
 import mergedTypeDefs from './typeDefs/index.js';
 import { connectDB } from './db/connectDB.js';
 
-// ---- Import your Passport config function
+// Import Passport config function
 import { configurePassport } from './config/passport.js';
 
 dotenv.config();
@@ -23,22 +23,25 @@ const __dirname = path.resolve();
 const app = express();
 const httpServer = http.createServer(app);
 
-// 1. Configure your session store
+// Configure session store
 const MongoDBStore = connectMongo(session);
 const store = new MongoDBStore({
   uri: process.env.MONGO_URI,
   collection: 'sessions',
+  connectionOptions: {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  },
 });
 
-// Optional: listen for errors in the session store
 store.on('error', (err) => {
   console.error('Session store error:', err);
 });
 
-// 2. Call the function that configures Passport
+// Configure Passport
 configurePassport();
 
-// 3. Use the session middleware
+// Session middleware
 app.use(
   session({
     secret: process.env.SESSION_SECRET,
@@ -47,43 +50,65 @@ app.use(
     store,
     cookie: {
       maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
-      httpOnly: true, // helps mitigate XSS
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production', // Enable in production
+      sameSite: 'lax', // Helps prevent CSRF
     },
   })
 );
 
-// 4. Initialize Passport and hook into session
+// Initialize Passport
 app.use(passport.initialize());
 app.use(passport.session());
 
-// 5. Create and start ApolloServer
+// Create Apollo Server
 const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
+  introspection: true, // Enable introspection explicitly
+  formatError: (error) => {
+    console.error('GraphQL Error:', error);
+    return error;
+  },
 });
 
-await server.start();
+// Start the server
+const startServer = async () => {
+  try {
+    await server.start();
 
-const isProduction = process.env.NODE_ENV === 'production';
-const frontendOrigin = isProduction
-  ? 'http://91.108.122.60:3002'
-  : 'http://localhost:3002';
+    const isProduction = process.env.NODE_ENV === 'production';
+    const frontendOrigin = isProduction
+      ? 'http://91.108.122.60:3002'
+      : 'http://localhost:3002';
 
-app.use(
-  '/graphql',
-  cors({
-    origin: 'http://91.108.122.60:3002', // Adjust to your front-end origin
-    credentials: true,
-  }),
-  express.json(),
-  expressMiddleware(server, {
-    context: async ({ req, res }) => buildContext({ req, res }),
-  })
-);
+    // Apply middleware
+    app.use(
+      '/graphql',
+      cors({
+        origin: [frontendOrigin, 'http://localhost:3000'],
+        credentials: true,
+      }),
+      express.json(),
+      expressMiddleware(server, {
+        context: async ({ req, res }) => ({
+          ...buildContext({ req, res }),
+          req,
+          res,
+        }),
+      })
+    );
 
-// 7. Connect to MongoDB, then start listening on port 4000
-await connectDB();
-await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
+    // Connect to MongoDB and start server
+    await connectDB();
+    await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
-console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+    console.log(`🚀 Server ready at http://localhost:4000/graphql`);
+  } catch (error) {
+    console.error('Failed to start server:', error);
+    process.exit(1);
+  }
+};
+
+startServer();
