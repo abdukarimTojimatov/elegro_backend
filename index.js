@@ -131,7 +131,7 @@ const startServer = async () => {
     await server.start();
 
     const allowedOrigins = [
-      'http://91.108.122.60:3002',
+      'http://91.108.122.60:3002/',
       'http://localhost:3002',
       'http://91.108.122.60',
       'http://localhost:3000',
