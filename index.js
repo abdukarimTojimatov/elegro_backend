@@ -5,6 +5,7 @@ import path from 'path';
 import passport from 'passport';
 import session from 'express-session';
 import connectMongo from 'connect-mongodb-session';
+import cors from 'cors';
 import { ApolloServer } from '@apollo/server';
 import { expressMiddleware } from '@apollo/server/express4';
 import { ApolloServerPluginDrainHttpServer } from '@apollo/server/plugin/drainHttpServer';
@@ -41,6 +42,15 @@ store.on('error', (err) => {
 // Configure Passport
 configurePassport();
 
+// CORS Middleware - Open to all origins
+app.use(
+  cors({
+    origin: '*', // Allow requests from all origins
+    methods: 'GET,POST,OPTIONS', // Allowed HTTP methods
+    allowedHeaders: 'Content-Type,Authorization', // Allowed headers
+  })
+);
+
 // Session middleware
 app.use(
   session({
@@ -61,12 +71,12 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Create Apollo Server with production-only introspection
+// Create Apollo Server with introspection and playground enabled
 const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  introspection: isProduction,
+  introspection: true, // Enable introspection for Playground
   formatError: (error) => {
     console.error('GraphQL Error:', error);
     return isProduction ? { message: 'Internal server error' } : error;
@@ -78,7 +88,7 @@ const startServer = async () => {
   try {
     await server.start();
 
-    // Apply middleware without CORS restrictions
+    // Apply Apollo middleware
     app.use(
       '/graphql',
       express.json(),
@@ -92,31 +102,13 @@ const startServer = async () => {
       })
     );
 
-    // Add a middleware to block introspection queries in non-production
-    if (!isProduction) {
-      app.use('/graphql', (req, res, next) => {
-        const query = req.body.query || '';
-        if (query.includes('__schema') || query.includes('__type')) {
-          return res.status(403).json({
-            errors: [
-              {
-                message:
-                  'GraphQL introspection is disabled in development environment',
-              },
-            ],
-          });
-        }
-        next();
-      });
-    }
-
-    // Connect to MongoDB and start server
+    // Connect to MongoDB and start the server
     await connectDB();
     await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
     console.log(`🚀 Server ready at http://localhost:4000/graphql`);
     console.log(`Environment: ${isProduction ? 'Production' : 'Development'}`);
-    console.log(`Introspection: ${isProduction ? 'Enabled' : 'Disabled'}`);
+    console.log('Playground: Enabled');
   } catch (error) {
     console.error('Failed to start server:', error);
     process.exit(1);
