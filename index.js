@@ -1,6 +1,5 @@
 import express from 'express';
 import http from 'http';
-import cors from 'cors';
 import dotenv from 'dotenv';
 import path from 'path';
 import passport from 'passport';
@@ -67,10 +66,9 @@ const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
   plugins: [ApolloServerPluginDrainHttpServer({ httpServer })],
-  introspection: isProduction, // Only allow introspection in production
+  introspection: isProduction,
   formatError: (error) => {
     console.error('GraphQL Error:', error);
-    // In production, you might want to sanitize the error message
     return isProduction ? { message: 'Internal server error' } : error;
   },
 });
@@ -80,18 +78,9 @@ const startServer = async () => {
   try {
     await server.start();
 
-    const frontendOrigin = isProduction
-      ? 'http://91.108.122.60:3002'
-      : 'http://localhost:3002';
-
-    // Apply middleware
+    // Apply middleware without CORS restrictions
     app.use(
       '/graphql',
-      cors({
-        // origin: 'http://91.108.122.60:3002',
-        origin: 'http://localhost:3002',
-        credentials: true,
-      }),
       express.json(),
       expressMiddleware(server, {
         context: async ({ req, res }) => ({
