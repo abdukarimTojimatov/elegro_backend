@@ -25,6 +25,7 @@ const httpServer = http.createServer(app);
 const isDevelopment = process.env.NODE_ENV === 'development';
 
 // Ensure the server only runs in development mode
+console.log('isDevelopment', process.env.NODE_ENV);
 if (!isDevelopment) {
   console.error('❌ Server can only run in development mode.');
   process.exit(1);
