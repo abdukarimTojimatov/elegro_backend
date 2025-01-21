@@ -1,5 +1,5 @@
 import Transaction from '../models/transaction.model.js';
-
+import mongoose from 'mongoose';
 const transactionResolver = {
   Query: {
     transactions: async (_, __, context) => {
@@ -30,31 +30,33 @@ const transactionResolver = {
       if (!context.getUser()) throw new Error('Unauthorized');
 
       const userId = context.getUser()._id;
-      const transactions = await Transaction.find({ userId });
-      const categoryMap = {};
 
-      // const transactions = [
-      // 	{ category: "expense", amount: 50 },
-      // 	{ category: "expense", amount: 75 },
-      // 	{ category: "investment", amount: 100 },
-      // 	{ category: "saving", amount: 30 },
-      // 	{ category: "saving", amount: 20 }
-      // ];
+      // Ensure userId is an ObjectId, even if it's passed as a string
+      const objectIdUserId = new mongoose.Types.ObjectId(userId);
 
-      transactions.forEach((transaction) => {
-        if (!categoryMap[transaction.category]) {
-          categoryMap[transaction.category] = 0;
-        }
-        categoryMap[transaction.category] += transaction.amount;
-      });
+      const categoryStatistics = await Transaction.aggregate([
+        {
+          $match: {
+            userId: objectIdUserId, // Correctly use ObjectId for matching
+          },
+        },
+        {
+          $group: {
+            _id: '$category', // Group by category
+            totalAmount: { $sum: '$amount' }, // Sum the amounts in each category
+          },
+        },
+        {
+          $project: {
+            category: '$_id', // Rename _id to category
+            totalAmount: 1, // Include totalAmount
+            _id: 0, // Exclude _id from the result
+          },
+        },
+      ]);
 
-      // categoryMap = { expense: 125, investment: 100, saving: 50 }
-
-      return Object.entries(categoryMap).map(([category, totalAmount]) => ({
-        category,
-        totalAmount,
-      }));
-      // return [ { category: "expense", totalAmount: 125 }, { category: "investment", totalAmount: 100 }, { category: "saving", totalAmount: 50 } ]
+      console.log('Category Statistics:', categoryStatistics);
+      return categoryStatistics;
     },
   },
   Mutation: {

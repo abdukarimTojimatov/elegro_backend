@@ -1,9 +1,11 @@
-import mongoose from "mongoose";
+import mongoose from 'mongoose';
+
+import mongoosePaginate from 'mongoose-paginate-v2';
 
 const transactionSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: 'User',
     required: true,
   },
   description: {
@@ -12,12 +14,12 @@ const transactionSchema = new mongoose.Schema({
   },
   paymentType: {
     type: String,
-    enum: ["cash", "card"],
+    enum: ['cash', 'card'],
     required: true,
   },
   category: {
     type: String,
-    enum: ["saving", "expense", "investment"],
+    enum: ['saving', 'expense', 'investment'],
     required: true,
   },
   amount: {
@@ -26,13 +28,13 @@ const transactionSchema = new mongoose.Schema({
   },
   location: {
     type: String,
-    default: "Unknown",
+    default: 'Unknown',
   },
   date: {
     type: String,
   },
 });
-
-const Transaction = mongoose.model("Transaction", transactionSchema);
+transactionSchema.plugin(mongoosePaginate);
+const Transaction = mongoose.model('Transaction', transactionSchema);
 
 export default Transaction;

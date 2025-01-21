@@ -28,36 +28,6 @@ const orderResolver = {
         throw new Error('Error getting order');
       }
     },
-    categoryStatistics: async (_, __, context) => {
-      if (!context.getUser()) throw new Error('Unauthorized');
-
-      const userId = context.getUser()._id;
-      const orders = await Order.find({ userId });
-      const categoryMap = {};
-
-      // const transactions = [
-      // 	{ category: "expense", amount: 50 },
-      // 	{ category: "expense", amount: 75 },
-      // 	{ category: "investment", amount: 100 },
-      // 	{ category: "saving", amount: 30 },
-      // 	{ category: "saving", amount: 20 }
-      // ];
-
-      orders.forEach((order) => {
-        if (!categoryMap[order.category]) {
-          categoryMap[order.category] = 0;
-        }
-        categoryMap[order.category] += order.amount;
-      });
-
-      // categoryMap = { expense: 125, investment: 100, saving: 50 }
-
-      return Object.entries(categoryMap).map(([category, totalAmount]) => ({
-        category,
-        totalAmount,
-      }));
-      // return [ { category: "expense", totalAmount: 125 }, { category: "investment", totalAmount: 100 }, { category: "saving", totalAmount: 50 } ]
-    },
   },
   Mutation: {
     //
