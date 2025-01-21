@@ -22,7 +22,13 @@ dotenv.config();
 const __dirname = path.resolve();
 const app = express();
 const httpServer = http.createServer(app);
-const isProduction = process.env.NODE_ENV === 'production';
+const isDevelopment = process.env.NODE_ENV === 'development';
+
+// Ensure the server only runs in development mode
+if (!isDevelopment) {
+  console.error('❌ Server can only run in development mode.');
+  process.exit(1);
+}
 
 // Configure session store
 const MongoDBStore = connectMongo(session);
@@ -42,12 +48,17 @@ store.on('error', (err) => {
 // Configure Passport
 configurePassport();
 
-// CORS Middleware - Open to all origins
+// CORS Middleware - Restrict to development origins
 app.use(
   cors({
-    origin: '*', // Allow requests from all origins
-    methods: 'GET,POST,OPTIONS', // Allowed HTTP methods
-    allowedHeaders: 'Content-Type,Authorization', // Allowed headers
+    origin: [
+      'http://localhost:4000',
+      'http://localhost:3000',
+      'http://91.108.122.60:3002',
+    ], // Add frontend origins used in development
+    credentials: true, // Enable sending cookies/credentials
+    methods: 'GET,POST,OPTIONS',
+    allowedHeaders: 'Content-Type,Authorization',
   })
 );
 
@@ -56,12 +67,12 @@ app.use(
   session({
     secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false,
+    saveUninitialized: true, // Allow unauthenticated sessions for development
     store,
     cookie: {
-      maxAge: 1000 * 60 * 60 * 24 * 7, // 1 week
+      maxAge: 1000 * 60 * 60 * 24 * 7,
       httpOnly: true,
-      secure: isProduction,
+      secure: false, // No HTTPS in development
       sameSite: 'lax',
     },
   })
@@ -71,7 +82,7 @@ app.use(
 app.use(passport.initialize());
 app.use(passport.session());
 
-// Create Apollo Server with introspection and playground enabled
+// Create Apollo Server with introspection and Playground enabled
 const server = new ApolloServer({
   typeDefs: mergedTypeDefs,
   resolvers: mergedResolvers,
@@ -79,7 +90,7 @@ const server = new ApolloServer({
   introspection: true, // Enable introspection for Playground
   formatError: (error) => {
     console.error('GraphQL Error:', error);
-    return isProduction ? { message: 'Internal server error' } : error;
+    return { message: error.message }; // Show full error messages in development
   },
 });
 
@@ -97,7 +108,7 @@ const startServer = async () => {
           ...buildContext({ req, res }),
           req,
           res,
-          isProduction,
+          isDevelopment,
         }),
       })
     );
@@ -107,7 +118,7 @@ const startServer = async () => {
     await new Promise((resolve) => httpServer.listen({ port: 4000 }, resolve));
 
     console.log(`🚀 Server ready at http://localhost:4000/graphql`);
-    console.log(`Environment: ${isProduction ? 'Production' : 'Development'}`);
+    console.log('Environment: Development');
     console.log('Playground: Enabled');
   } catch (error) {
     console.error('Failed to start server:', error);
