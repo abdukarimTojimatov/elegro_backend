@@ -22,7 +22,7 @@ dotenv.config();
 const __dirname = path.resolve();
 const app = express();
 const httpServer = http.createServer(app);
-const isDevelopment = process.env.NODE_ENV === 'development';
+const isDevelopment = 'development';
 
 // Ensure the server only runs in development mode
 console.log('isDevelopment', process.env.NODE_ENV);
