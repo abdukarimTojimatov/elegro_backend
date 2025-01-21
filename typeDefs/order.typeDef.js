@@ -34,7 +34,7 @@ const orderTypeDef = `#graphql
   type Mutation {
     createOrder(input: CreateOrderInput!): Order
     updateOrder(input: UpdateOrderInput!): Order
-    deleteOrder(_id: ID!): Order
+    deleteOrder(orderId: ID!): Order
   }
 
   input CreateOrderInput {
