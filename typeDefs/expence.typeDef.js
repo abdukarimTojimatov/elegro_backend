@@ -6,7 +6,6 @@ const expenceTypeDef = `#graphql
     paymentType: String!
     category: String!
     amount: Float!
-    location: String
     date: String!
     user: User
   }
@@ -20,7 +19,7 @@ const expenceTypeDef = `#graphql
   type Mutation {
     createExpence(input: CreateExpenceInput!): Expence!
     updateExpence(input: UpdateExpenceInput): Expence
-    deleteExpence(ExpenceId:ID!): Expence!
+    deleteExpence(expenceId:ID!): Expence!
   }
 
   type CategoryStatistics {
@@ -34,7 +33,6 @@ const expenceTypeDef = `#graphql
     category: String!
     amount: Float!
     date: String!
-    location: String
   }
 
   input UpdateExpenceInput {
@@ -43,7 +41,6 @@ const expenceTypeDef = `#graphql
     paymentType: String
     category: String
     amount: Float
-    location: String
     date: String
   }
 `;
