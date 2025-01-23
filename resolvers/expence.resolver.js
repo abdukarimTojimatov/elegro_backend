@@ -5,9 +5,10 @@ const expenceResolver = {
     expences: async (_, __, context) => {
       try {
         if (!context.getUser()) throw new Error('Unauthorized');
-        const userId = await context.getUser()._id;
 
-        const expences = await Expence.find({ userId });
+        const expences = await Expence.find().populate('userId');
+        // const expences = await Expence.find();
+
         return expences;
       } catch (err) {
         console.error('Error getting expences:', err);

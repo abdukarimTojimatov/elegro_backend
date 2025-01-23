@@ -2,10 +2,8 @@ const userTypeDef = `#graphql
   type User {
     _id: ID!
     username: String!
-    name: String!
     password: String!
-    profilePicture: String
-    gender: String!
+    phoneNumber: String!
     expences: [Expence!]
   }
 
@@ -24,13 +22,12 @@ const userTypeDef = `#graphql
 
   input SignUpInput {
     username: String!
-    name: String!
-    password: String!
-    gender: String!
+    password: String
+    phoneNumber: String!
   }
 
   input LoginInput {
-    username: String!
+    phoneNumber: String!
     password: String!
   }
 

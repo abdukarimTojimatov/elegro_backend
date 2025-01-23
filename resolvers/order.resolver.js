@@ -33,18 +33,15 @@ const orderResolver = {
     //
     createOrder: async (_, { input }, context) => {
       try {
-        console.log('3');
         if (!context.getUser()) throw new Error('Unauthorized');
-        console.log('1');
-        console.log('input', input);
+
         const newOrder = new Order({
           ...input,
           userId: context.getUser()._id,
         });
-        console.log('2');
-        console.log('newOrder', newOrder);
+
         await newOrder.save();
-        console.log('3');
+
         return newOrder;
       } catch (err) {
         console.error('Error creating order:', err);

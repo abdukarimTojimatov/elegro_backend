@@ -1,13 +1,12 @@
 const expenceTypeDef = `#graphql
   type Expence {
     _id: ID!
-    userId: ID!
+    userId: User
     description: String!
     paymentType: String!
     category: String!
     amount: Float!
     date: String!
-    user: User
   }
 
   type Query {

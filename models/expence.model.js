@@ -25,7 +25,6 @@ const expenceSchema = new mongoose.Schema({
     type: Number,
     required: true,
   },
-
   date: {
     type: String,
   },

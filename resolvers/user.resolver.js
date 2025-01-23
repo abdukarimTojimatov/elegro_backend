@@ -8,9 +8,9 @@ const userResolver = {
     //
     signUp: async (_, { input }, context) => {
       try {
-        const { username, name, password, gender } = input;
+        const { username, password, phoneNumber } = input;
 
-        if (!username || !name || !password || !gender) {
+        if (!username || !password || !phoneNumber) {
           throw new Error('All fields are required');
         }
 
@@ -22,21 +22,15 @@ const userResolver = {
 
         const salt = await bcrypt.genSalt(10);
         const hashedPassword = await bcrypt.hash(password, salt);
-        const boyProfilePic = `https://avatar.iran.liara.run/public/boy?username=${username}`;
-        const girlProfilePic = `https://avatar.iran.liara.run/public/girl?username=${username}`;
 
         const newUser = new User({
           username,
-          name,
           password: hashedPassword,
-          gender,
-          profilePicture: gender === 'male' ? boyProfilePic : girlProfilePic,
+          phoneNumber,
         });
 
-        console.log('newUser', newUser);
-
         await newUser.save();
-        console.log('passed here');
+
         await context.login(newUser);
         return newUser;
       } catch (err) {
@@ -47,22 +41,27 @@ const userResolver = {
     //
     login: async (_, { input }, context) => {
       try {
-        const { username, password } = input;
+        const { phoneNumber, password } = input; // Ensure this is correct
 
-        if (!username || !password) {
+        if (!phoneNumber || !password) {
           throw new Error('All fields are required');
         }
+
+        console.log('Login attempt:', { phoneNumber, password }); // Debug log
+
         const { user } = await context.authenticate('graphql-local', {
-          username,
+          email: phoneNumber, // GraphQLLocalStrategy expects username or email
           password,
         });
+
         await context.login(user);
         return user;
       } catch (err) {
-        console.log('Error in login', err);
-        throw new Error(err.message || 'Internal server error');
+        console.error('Login error details:', err);
+        throw new Error(err.message || 'Authentication failed');
       }
     },
+    //
     logout: async (_, __, context) => {
       try {
         await context.logout();
@@ -102,9 +101,8 @@ const userResolver = {
   User: {
     expences: async (parent) => {
       try {
-        console.log('parent', parent._id);
         const expences = await Expence.find({ userId: parent._id });
-        console.log('expences', expences);
+
         return expences;
       } catch (err) {
         console.log('Error in user.expences resolver:', err);
