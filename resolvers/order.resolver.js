@@ -15,10 +15,10 @@ const orderResolver = {
         throw new Error('Error getting orders');
       }
     },
-    order: async (_, { id }) => {
+    order: async (_, { orderId }) => {
       try {
-        console.log('id', id);
-        const order = await Order.findById(id);
+        console.log('orderId', orderId);
+        const order = await Order.findById(orderId);
         if (!order) {
           throw new Error('not found order');
         }
@@ -54,14 +54,15 @@ const orderResolver = {
     //
     updateOrder: async (_, { input }) => {
       try {
+        const { orderId, ...updateData } = input;
         const updatedOrder = await Order.findByIdAndUpdate(
-          input.orderId,
-          input,
-          { new: true }
+          orderId,
+          { $set: updateData },
+          { new: true, runValidators: true }
         );
         return updatedOrder;
       } catch (err) {
-        cosole.error('Error updating order:', err);
+        console.error('Error updating order:', err);
         throw new Error('Error updating order');
       }
     },
