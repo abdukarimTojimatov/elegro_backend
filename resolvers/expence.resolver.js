@@ -27,7 +27,7 @@ const expenceResolver = {
         throw new Error('Error getting expence');
       }
     },
-    categoryStatistics: async (_, __, context) => {
+    categoryStatisticsExpense: async (_, __, context) => {
       if (!context.getUser()) throw new Error('Unauthorized');
 
       const userId = context.getUser()._id;
@@ -36,11 +36,11 @@ const expenceResolver = {
       const objectIdUserId = new mongoose.Types.ObjectId(userId);
 
       const categoryStatistics = await Expence.aggregate([
-        {
-          $match: {
-            userId: objectIdUserId, // Correctly use ObjectId for matching
-          },
-        },
+        // {
+        //   $match: {
+        //     userId: objectIdUserId, // Correctly use ObjectId for matching
+        //   },
+        // },
         {
           $group: {
             _id: '$category', // Group by category

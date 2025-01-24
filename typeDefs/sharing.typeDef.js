@@ -5,12 +5,14 @@ const sharingTypeDef = `#graphql
     sharingPaymentType: String!
     sharingAmount: String!
     sharingDate: String!
+    sharingCategoryType: String!
     userId: ID!
   }
 
   type Query {
     sharings: [Sharing!]!
     sharing(sharingId: ID!): Sharing
+    categoryStatistics: [CategoryStatistics!]
   }
 
   type Mutation {
@@ -24,6 +26,7 @@ const sharingTypeDef = `#graphql
     sharingPaymentType: String!
     sharingAmount: Float!
     sharingDate: String
+    sharingCategoryType: String!
   }
 
   input UpdateSharingInput {
@@ -32,6 +35,8 @@ const sharingTypeDef = `#graphql
     sharingPaymentType: String
     sharingAmount: Float
     sharingDate: String
+    sharingCategoryType: String
+
   }
 `;
 

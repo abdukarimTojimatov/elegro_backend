@@ -16,6 +16,11 @@ const sharingSchema = new mongoose.Schema({
     enum: ['naqd', 'plastik'],
     required: true,
   },
+  sharingCategoryType: {
+    type: String,
+    enum: ['Rozimuhammad', 'Elmurod', 'Egamberdi'],
+    required: true,
+  },
   sharingAmount: {
     type: Number,
     required: true,

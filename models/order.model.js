@@ -104,9 +104,7 @@ const orderSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-// Use a middleware that runs before save or update operations
 orderSchema.pre('save', async function (next) {
-  // Handle auto-number generation for new documents
   if (this.isNew) {
     const currentYear = new Date().getFullYear();
     const yearPrefix = currentYear.toString().substr(-2);
@@ -129,13 +127,11 @@ orderSchema.pre('save', async function (next) {
     this.orderAutoNumber = `${yearPrefix}${orderAutoNumber.toString().padStart(4, '0')}`;
   }
 
-  // Payment calculations
   const totalPaid = this.orderPayments.reduce(
     (acc, payment) => acc + (payment.amount || 0),
     0
   );
 
-  // Update payment status
   if (totalPaid === 0) {
     this.orderPaymentStatus = 'tolanmadi'; // unpaid
   } else if (totalPaid < this.orderTotalAmount) {
@@ -144,38 +140,30 @@ orderSchema.pre('save', async function (next) {
     this.orderPaymentStatus = 'tolandi'; // paid
   }
 
-  // Update total paid and debt
   this.orderTotalPaid = totalPaid;
   this.orderTotalDebt = this.orderTotalAmount - totalPaid;
 
   next();
 });
 
-// Add a pre-update middleware to handle updates
 orderSchema.pre('findOneAndUpdate', async function (next) {
   try {
-    // Get the update document
     const update = this.getUpdate();
 
-    // If orderPayments is being modified
     if (update.$set && update.$set.orderPayments) {
-      // Find the current document
       const currentDoc = await this.model.findOne(this.getQuery());
 
       if (currentDoc) {
-        // Create a clone of the current document and update orderPayments
         const updatedDoc = {
           ...currentDoc.toObject(),
           orderPayments: update.$set.orderPayments,
         };
 
-        // Calculate total paid
         const totalPaid = updatedDoc.orderPayments.reduce(
           (acc, payment) => acc + (payment.amount || 0),
           0
         );
 
-        // Determine payment status
         let orderPaymentStatus;
         if (totalPaid === 0) {
           orderPaymentStatus = 'tolanmadi';
@@ -185,7 +173,6 @@ orderSchema.pre('findOneAndUpdate', async function (next) {
           orderPaymentStatus = 'tolandi';
         }
 
-        // Add these calculated fields to the update
         this.set({
           orderPaymentStatus,
           orderTotalPaid: totalPaid,

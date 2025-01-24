@@ -12,7 +12,7 @@ const expenceTypeDef = `#graphql
   type Query {
     expences: [Expence!]
     expence(expenceId:ID!): Expence
-    categoryStatistics: [CategoryStatistics!]
+    categoryStatisticsExpense: [CategoryStatistics!]
   }
 
   type Mutation {

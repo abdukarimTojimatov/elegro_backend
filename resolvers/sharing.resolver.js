@@ -27,6 +27,38 @@ const sharingResolver = {
         throw new Error('Error getting sharing');
       }
     },
+    categoryStatistics: async (_, __, context) => {
+      if (!context.getUser()) throw new Error('Unauthorized');
+
+      //const userId = context.getUser()._id;
+
+      // Ensure userId is an ObjectId, even if it's passed as a string
+      // const objectIdUserId = new mongoose.Types.ObjectId(userId);
+
+      const categoryStatistics = await Sharing.aggregate([
+        // {
+        //   $match: {
+        //     userId: objectIdUserId, // Correctly use ObjectId for matching
+        //   },
+        // },
+        {
+          $group: {
+            _id: '$sharingCategoryType', // Group by category
+            totalAmount: { $sum: '$sharingAmount' }, // Sum the amounts in each category
+          },
+        },
+        {
+          $project: {
+            category: '$_id', // Rename _id to category
+            totalAmount: 1, // Include totalAmount
+            _id: 0, // Exclude _id from the result
+          },
+        },
+      ]);
+
+      console.log('Category Statistics:', categoryStatistics);
+      return categoryStatistics;
+    },
   },
   Mutation: {
     //

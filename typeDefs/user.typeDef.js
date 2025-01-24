@@ -5,6 +5,7 @@ const userTypeDef = `#graphql
     password: String!
     phoneNumber: String!
     expences: [Expence!]
+    sharings: [Sharing!]
   }
 
   type Query {
