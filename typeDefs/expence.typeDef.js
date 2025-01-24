@@ -1,7 +1,6 @@
 const expenceTypeDef = `#graphql
   type Expence {
     _id: ID!
-    userId: User
     description: String!
     paymentType: String!
     category: String!
