@@ -14,13 +14,9 @@ const orderTypeDef = `#graphql
     orderCustomerPhoneNumber: String
     orderLocation: String
     orderStatus: String!
-    
-    # Order details
     orderDescription: String!
-    
-    # Financial information
     orderPaymentStatus: String!
-    orderTotalAmount: Float!
+    orderTotalAmount: Float
     orderTotalPaid: Float!
     orderTotalDebt: Float!
     orderExpensesAmount: Float

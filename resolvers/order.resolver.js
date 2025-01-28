@@ -51,6 +51,7 @@ const orderResolver = {
     //
     updateOrder: async (_, { input }) => {
       try {
+        console.log('input', input);
         const { orderId, ...updateData } = input;
         const updatedOrder = await Order.findByIdAndUpdate(
           orderId,
