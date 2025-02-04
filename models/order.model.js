@@ -95,7 +95,7 @@ const orderSchema = new mongoose.Schema(
     ],
     date: {
       type: String,
-      default: moment().format('YYYY-MM-DD-HH:mm'),
+      default: moment().format('YYYY-MM-DD HH:mm'),
     },
     orderReadyDate: {
       type: String,

@@ -53,7 +53,7 @@ configurePassport();
 app.use(
   cors({
     origin: [
-      'http://localhost:4000',
+      'http://localhost:4000/graphql',
       'http://localhost:3000',
       'http://91.108.122.60:3002',
       'http://91.108.122.60:3000',

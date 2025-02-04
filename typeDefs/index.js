@@ -4,11 +4,14 @@ import userTypeDef from './user.typeDef.js';
 import expenceTypeDef from './expence.typeDef.js';
 import orderTypeDef from './order.typeDef.js';
 import sharingTypeDef from './sharing.typeDef.js';
+import rawMaterialTypeDef from './rawMaterial.typeDef.js';
+
 const mergedTypeDefs = mergeTypeDefs([
   userTypeDef,
   expenceTypeDef,
   orderTypeDef,
   sharingTypeDef,
+  rawMaterialTypeDef,
 ]);
 
 export default mergedTypeDefs;

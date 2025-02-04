@@ -4,10 +4,7 @@ const orderResolver = {
   Query: {
     orders: async (_, __, context) => {
       try {
-        if (!context.getUser()) throw new Error('Unauthorized');
-        const userId = await context.getUser()._id;
-
-        const orders = await Order.find({ userId });
+        const orders = await Order.find();
 
         return orders;
       } catch (err) {
