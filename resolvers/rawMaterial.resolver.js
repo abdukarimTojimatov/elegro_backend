@@ -2,9 +2,14 @@ import RawMaterial from '../models/rawMaterial.model.js';
 
 const rawMaterialResolvers = {
   Query: {
-    getRawMaterials: async () => {
+    getRawMaterials: async (_, { page, limit }) => {
       try {
-        return await RawMaterial.find();
+        const options = {
+          page,
+          limit,
+        };
+        const result = await RawMaterial.paginate({}, options);
+        return result;
       } catch (error) {
         console.error('Error fetching raw materials:', error);
         throw new Error('Error fetching raw materials: ' + error.message);

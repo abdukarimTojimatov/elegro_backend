@@ -1,43 +1,55 @@
 const sharingTypeDef = `#graphql
-  type Sharing {
-    _id: ID!
-    sharingDescription: String
-    sharingPaymentType: String!
-    sharingAmount: String!
-    sharingDate: String!
-    sharingCategoryType: String!
-    userId: ID!
-  }
+type Sharing {
+  _id: ID!
+  sharingDescription: String
+  sharingPaymentType: String!
+  sharingAmount: Float!
+  sharingCategoryType: String!
+  sharingDate: String!
+}
 
-  type Query {
-    sharings: [Sharing!]!
-    sharing(sharingId: ID!): Sharing
-    categoryStatistics: [CategoryStatistics!]
-  }
+type PaginatedSharings {
+  docs: [Sharing]
+  totalDocs: Int
+  limit: Int
+  totalPages: Int
+  page: Int
+  hasPrevPage: Boolean
+  hasNextPage: Boolean
+}
 
-  type Mutation {
-    createSharing(input: CreateSharingInput!): Sharing!
-    updateSharing(input: UpdateSharingInput!): Sharing!
-    deleteSharing(sharingId: ID!): Sharing!
-  }
+type Query {
+  getSharings(page: Int, limit: Int, category: String): PaginatedSharings
+  getSharing(id: ID!): Sharing
+  categoryStatisticsSharing: [CategoryStatistics!]
+}
 
-  input CreateSharingInput {
-    sharingDescription: String
-    sharingPaymentType: String!
-    sharingAmount: Float!
-    sharingDate: String
-    sharingCategoryType: String!
-  }
+type Mutation {
+  createSharing(input: CreateSharingInput!): Sharing!
+  updateSharing(input: UpdateSharingInput!): Sharing!
+  deleteSharing(sharingId: ID!): Sharing!
+}
 
-  input UpdateSharingInput {
-    sharingId: ID!
-    sharingDescription: String
-    sharingPaymentType: String
-    sharingAmount: Float
-    sharingDate: String
-    sharingCategoryType: String
+type CategoryStatistics {
+  category: String!
+  totalAmount: Float!
+}
 
-  }
-`;
+input CreateSharingInput {
+  sharingDescription: String
+  sharingPaymentType: String!
+  sharingAmount: Float!
+  sharingCategoryType: String!
+  sharingDate: String
+}
+
+input UpdateSharingInput {
+  _id: ID!
+  sharingDescription: String
+  sharingPaymentType: String
+  sharingAmount: Float
+  sharingCategoryType: String
+  sharingDate: String
+}`;
 
 export default sharingTypeDef;

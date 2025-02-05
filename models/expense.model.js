@@ -1,7 +1,7 @@
 import mongoose from 'mongoose';
 import mongoosePaginate from 'mongoose-paginate-v2';
 
-const expenceSchema = new mongoose.Schema({
+const expenseSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'User',
@@ -29,7 +29,7 @@ const expenceSchema = new mongoose.Schema({
     type: String,
   },
 });
-expenceSchema.plugin(mongoosePaginate);
-const Expence = mongoose.model('Expence', expenceSchema);
+expenseSchema.plugin(mongoosePaginate);
+const Expense = mongoose.model('Expense', expenseSchema);
 
-export default Expence;
+export default Expense;

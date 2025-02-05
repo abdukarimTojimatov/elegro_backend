@@ -2,22 +2,26 @@ import Sharing from '../models/sharing.model.js';
 
 const sharingResolver = {
   Query: {
-    sharings: async (_, __, context) => {
+    getSharings: async (_, { page, limit, category }) => {
       try {
-        if (!context.getUser()) throw new Error('Unauthorized');
-        const userId = await context.getUser()._id;
-
-        const sharings = await Sharing.find({ userId });
-
-        return sharings;
-      } catch (err) {
-        console.error('Error getting orders:', err);
-        throw new Error('Error getting orders');
+        const options = {
+          page,
+          limit,
+        };
+        const query = {};
+        if (category) {
+          query.sharingCategoryType = category; // Filter by category if provided
+        }
+        const result = await Sharing.paginate(query, options);
+        return result;
+      } catch (error) {
+        console.error('Error fetching sharings:', error);
+        throw new Error('Error fetching sharings: ' + error.message);
       }
     },
-    sharing: async (_, { sharingId }) => {
+    getSharing: async (_, { id }) => {
       try {
-        const sharing = await Sharing.findById(sharingId);
+        const sharing = await Sharing.findById(id);
         if (!sharing) {
           throw new Error('not found sharing');
         }
@@ -27,7 +31,7 @@ const sharingResolver = {
         throw new Error('Error getting sharing');
       }
     },
-    categoryStatistics: async (_, __, context) => {
+    categoryStatisticsSharing: async (_, __, context) => {
       if (!context.getUser()) throw new Error('Unauthorized');
 
       //const userId = context.getUser()._id;
@@ -84,10 +88,10 @@ const sharingResolver = {
       try {
         if (!context.getUser()) throw new Error('Unauthorized');
 
-        const { sharingId, ...updateData } = input;
+        const { _id, ...updateData } = input;
 
         const updatedSharing = await Sharing.findByIdAndUpdate(
-          sharingId,
+          _id,
           { $set: updateData },
           { new: true, runValidators: true }
         );

@@ -4,7 +4,7 @@ const userTypeDef = `#graphql
     username: String!
     password: String!
     phoneNumber: String!
-    expences: [Expence!]
+    expenses: [Expense!]
     sharings: [Sharing!]
   }
 

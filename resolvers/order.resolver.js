@@ -2,17 +2,20 @@ import Order from '../models/order.model.js';
 
 const orderResolver = {
   Query: {
-    orders: async (_, __, context) => {
+    getOrders: async (_, { page = 1, limit = 10 }) => {
       try {
-        const orders = await Order.find();
-
-        return orders;
-      } catch (err) {
-        console.error('Error getting orders:', err);
-        throw new Error('Error getting orders');
+        const options = {
+          page,
+          limit,
+        };
+        const result = await Order.paginate({}, options);
+        return result;
+      } catch (error) {
+        console.error('Error fetching orders:', error);
+        throw new Error('Error fetching orders: ' + error.message);
       }
     },
-    order: async (_, { orderId }) => {
+    getOrder: async (_, { orderId }) => {
       try {
         console.log('orderId', orderId);
         const order = await Order.findById(orderId);

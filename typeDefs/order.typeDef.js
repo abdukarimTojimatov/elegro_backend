@@ -1,89 +1,47 @@
 const orderTypeDef = `#graphql
-  type Order {
-    # Core fields
-    _id: ID!
-    orderAutoNumber: String
-    orderName: String!
-    orderCategory: String!
-    orderType: String!
-    date: String!
-    orderReadyDate: String!
-    # Customer information
-    userId: ID!
-    orderCustomerName: String!
-    orderCustomerPhoneNumber: String
-    orderLocation: String
-    orderStatus: String!
-    orderDescription: String!
-    orderPaymentStatus: String!
-    orderTotalAmount: Float
-    orderTotalPaid: Float!
-    orderTotalDebt: Float!
-    orderExpensesAmount: Float
-    orderExpensesDescription: String
-    orderPayments: [OrderPayment]
-  }
+type Order {
+  _id: ID!
+  userId: ID!
+  orderName: String!
+  orderDescription: String
+  orderTotalAmount: Float!
+  orderStatus: String!
+  date: String
+}
 
-  type OrderPayment {
-    paymentType: String!
-    amount: Float!
-    date: String!
-  }
+type PaginatedOrders {
+  docs: [Order]
+  totalDocs: Int
+  limit: Int
+  totalPages: Int
+  page: Int
+  hasPrevPage: Boolean
+  hasNextPage: Boolean
+}
 
-  type Query {
-    orders: [Order!]!
-    order(orderId: ID!): Order
-  }
+type Query {
+  getOrders(page: Int, limit: Int): PaginatedOrders
+  getOrder(id: ID!): Order
+}
 
-  type Mutation {
-    createOrder(input: CreateOrderInput!): Order!
-    updateOrder(input: UpdateOrderInput!): Order!
-    deleteOrder(orderId: ID!): Order!
-  }
+type Mutation {
+  createOrder(input: CreateOrderInput!): Order
+  updateOrder(input: UpdateOrderInput!): Order
+  deleteOrder(orderId: ID!): Order
+}
 
-  input OrderPaymentInput {
-    paymentType: String
-    amount: Float
-    date: String
-  }
+input CreateOrderInput {
+  userId: ID
+  orderName: String
+  orderDescription: String
+  orderTotalAmount: Float
+}
 
-  input CreateOrderInput {
-    orderName: String!
-    orderCustomerName: String!
-    orderCustomerPhoneNumber: String
-    orderDescription: String!
-    orderCategory: String!
-    orderType: String!
-    orderPaymentStatus: String!
-    orderTotalAmount: Float!
-    orderExpensesAmount: Float
-    orderReadyDate: String!
-    orderTotalPaid: Float!
-    orderTotalDebt: Float!
-    orderExpensesDescription: String
-    orderLocation: String
-    orderPayments: [OrderPaymentInput]
-  }
-
-  input UpdateOrderInput {
-    orderId: ID!
-    orderName: String
-    orderCustomerName: String
-    orderCustomerPhoneNumber: String
-    orderDescription: String
-    orderCategory: String
-    orderType: String
-    orderPaymentStatus: String
-    orderTotalAmount: Float
-    orderReadyDate: String
-    orderExpensesAmount: Float
-    orderTotalPaid: Float
-    orderTotalDebt: Float
-    orderExpensesDescription: String
-    orderLocation: String
-    orderStatus: String
-    orderPayments: [OrderPaymentInput]
-  }
-`;
+input UpdateOrderInput {
+  _id: ID!
+  orderName: String
+  orderDescription: String
+  orderTotalAmount: Float
+}`;
 
 export default orderTypeDef;

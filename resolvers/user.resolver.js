@@ -1,6 +1,6 @@
 import User from '../models/user.model.js';
 import bcrypt from 'bcryptjs';
-import Expence from '../models/expence.model.js';
+import Expense from '../models/expense.model.js';
 import Sharing from '../models/sharing.model.js';
 
 const userResolver = {
@@ -100,13 +100,13 @@ const userResolver = {
     },
   },
   User: {
-    expences: async (parent) => {
+    expenses: async (parent) => {
       try {
-        const expences = await Expence.find({ userId: parent._id });
+        const expenses = await Expense.find({ userId: parent._id });
 
-        return expences;
+        return expenses;
       } catch (err) {
-        console.log('Error in user.expences resolver:', err);
+        console.log('Error in user.expenses resolver:', err);
         throw new Error(err.message || 'Internal server error');
       }
     },
