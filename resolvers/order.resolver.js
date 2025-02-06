@@ -1,24 +1,34 @@
 import Order from '../models/order.model.js';
+import mongoose from 'mongoose';
 
 const orderResolver = {
   Query: {
-    getOrders: async (_, { page = 1, limit = 10 }) => {
+    getOrders: async (
+      _,
+      { page, limit, orderCategory, orderStatus, orderType, orderPaymentStatus }
+    ) => {
       try {
+        const query = {};
+        if (orderCategory) query.orderCategory = orderCategory;
+        if (orderStatus) query.orderStatus = orderStatus;
+        if (orderType) query.orderType = orderType;
+        if (orderPaymentStatus) query.orderPaymentStatus = orderPaymentStatus;
+        console.log('query', query);
         const options = {
           page,
           limit,
         };
-        const result = await Order.paginate({}, options);
-        return result;
+        const result = await Order.paginate(query, options);
+        return result; // Ensure this returns the correct paginated structure
       } catch (error) {
         console.error('Error fetching orders:', error);
         throw new Error('Error fetching orders: ' + error.message);
       }
     },
-    getOrder: async (_, { orderId }) => {
+    getOrder: async (_, { id }) => {
       try {
-        console.log('orderId', orderId);
-        const order = await Order.findById(orderId);
+        console.log('orderId', id);
+        const order = await Order.findById(id);
         if (!order) {
           throw new Error('not found order');
         }
@@ -34,7 +44,7 @@ const orderResolver = {
     createOrder: async (_, { input }, context) => {
       try {
         if (!context.getUser()) throw new Error('Unauthorized');
-
+        console.log('input', input);
         const newOrder = new Order({
           ...input,
           userId: context.getUser()._id,
@@ -65,9 +75,9 @@ const orderResolver = {
       }
     },
     //
-    deleteOrder: async (_, { orderId }) => {
+    deleteOrder: async (_, { id }) => {
       try {
-        const deletedOrder = await Order.findByIdAndDelete(orderId);
+        const deletedOrder = await Order.findByIdAndDelete(id);
 
         return deletedOrder;
       } catch (err) {

@@ -10,12 +10,11 @@ const expenseResolver = {
           limit,
         };
 
-        // Construct the query object
         const query = {};
         if (category) {
-          query.category = category; // Filter by category if provided
+          query.category = category;
         }
-        console.log('query');
+
         const result = await Expense.paginate(query, options);
         return result;
       } catch (error) {
@@ -40,19 +39,13 @@ const expenseResolver = {
 
       const userId = context.getUser()._id;
 
-      // Ensure userId is an ObjectId, even if it's passed as a string
       const objectIdUserId = new mongoose.Types.ObjectId(userId);
 
       const categoryStatistics = await Expense.aggregate([
-        // {
-        //   $match: {
-        //     userId: objectIdUserId, // Correctly use ObjectId for matching
-        //   },
-        // },
         {
           $group: {
-            _id: '$category', // Group by category
-            totalAmount: { $sum: '$amount' }, // Sum the amounts in each category
+            _id: '$category',
+            totalAmount: { $sum: '$amount' },
           },
         },
         {

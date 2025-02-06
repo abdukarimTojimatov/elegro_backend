@@ -26,9 +26,10 @@ const rawMaterialSchema = new mongoose.Schema(
       type: String,
       required: false,
     },
-    rawMaterialDescription: {
+    rawMaterialCategory: {
       type: String,
-      required: false,
+      required: true,
+      enum: ['Machalka', 'Mehanizm', 'Kraska', 'Temir', 'Material'],
     },
     rawMaterialQuantity: {
       type: Number,
@@ -60,6 +61,11 @@ const rawMaterialSchema = new mongoose.Schema(
         },
       },
     ],
+    paymentStatus: {
+      type: Boolean,
+      required: false,
+      default: false,
+    },
     rawMaterialTotalPrice: {
       type: Number,
       required: false,
@@ -114,7 +120,6 @@ rawMaterialSchema.pre('findOneAndUpdate', async function (next) {
       }
     }
 
-    // Calculate rawMaterialTotalPrice if rawMaterialQuantity or rawMaterialPrice is updated
     if (update.$set.rawMaterialQuantity || update.$set.rawMaterialPrice) {
       const quantity =
         update.$set.rawMaterialQuantity || currentDoc.rawMaterialQuantity;

@@ -11,9 +11,11 @@ type RawMaterial {
   rawMaterialPrice: Float!
   payments: [Payment]
   rawMaterialTotalPrice: Float!
+  rawMaterialCategory: String!
   totalPaid: Float
   totalDebt: Float
   date: String
+  paymentStatus: Boolean
 }
 
 type Payment {
@@ -44,15 +46,14 @@ type Mutation {
 }
 
 input CreateRawMaterialInput {
-  userId: ID
   rawMaterialName: String
   rawMaterialDescription: String
   rawMaterialQuantity: Float
   customerName: String
   phoneNumber: String
   unitOfMeasurement: String
+  rawMaterialCategory: String
   rawMaterialPrice: Float
-  payments: [PaymentInput]
 }
 
 input UpdateRawMaterialInput {
@@ -62,6 +63,7 @@ input UpdateRawMaterialInput {
   phoneNumber: String
   rawMaterialDescription: String
   rawMaterialQuantity: Float
+  rawMaterialCategory: String
   unitOfMeasurement: String
   rawMaterialPrice: Float
   payments: [PaymentInput]
