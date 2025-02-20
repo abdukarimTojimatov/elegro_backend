@@ -62,18 +62,58 @@ const orderResolver = {
     updateOrder: async (_, { input }) => {
       try {
         console.log('input', input);
-        const { orderId, ...updateData } = input;
-        const updatedOrder = await Order.findByIdAndUpdate(
-          orderId,
-          { $set: updateData },
-          { new: true, runValidators: true }
+        const { _id, ...updateData } = input;
+
+        // Fetch the existing order
+        let order = await Order.findById(_id);
+        if (!order) {
+          throw new Error('Order not found');
+        }
+
+        // Update fields that are directly provided (except orderPayments for now)
+        Object.keys(updateData).forEach((key) => {
+          if (updateData[key] !== undefined && key !== 'orderPayments') {
+            order[key] = updateData[key];
+          }
+        });
+
+        // Handle orderPayments update:
+        if (updateData.orderPayments) {
+          // If the client provides orderPayments, you can choose to:
+          // Option 1: Replace the existing payments array:
+          order.orderPayments = updateData.orderPayments;
+
+          // Option 2: If you intend to only add new payments, you might merge:
+          // order.orderPayments = order.orderPayments.concat(updateData.orderPayments);
+        }
+
+        // Recalculate total paid from the payments array.
+        order.orderTotalPaid = order.orderPayments.reduce(
+          (sum, payment) => sum + (payment.amount || 0),
+          0
         );
+
+        // Recalculate debt as the difference between the total amount and the total paid.
+        order.orderTotalDebt = order.orderTotalAmount - order.orderTotalPaid;
+
+        // Update payment status based on the total paid vs. total amount.
+        if (order.orderTotalPaid === 0) {
+          order.orderPaymentStatus = 'tolanmadi';
+        } else if (order.orderTotalPaid < order.orderTotalAmount) {
+          order.orderPaymentStatus = 'qismanTolandi';
+        } else {
+          order.orderPaymentStatus = 'tolandi';
+        }
+
+        // Save the updated order.
+        const updatedOrder = await order.save();
         return updatedOrder;
       } catch (err) {
         console.error('Error updating order:', err);
         throw new Error('Error updating order');
       }
     },
+
     //
     deleteOrder: async (_, { id }) => {
       try {

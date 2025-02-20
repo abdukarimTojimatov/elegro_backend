@@ -10,12 +10,13 @@ type RawMaterial {
   unitOfMeasurement: String!
   rawMaterialPrice: Float!
   payments: [Payment]
-  rawMaterialTotalPrice: Float!
+  rawMaterialTotalPrice: Float
   rawMaterialCategory: String!
   totalPaid: Float
   totalDebt: Float
   date: String
   paymentStatus: Boolean
+
 }
 
 type Payment {
@@ -42,7 +43,7 @@ type Query {
 type Mutation {
   createRawMaterial(input: CreateRawMaterialInput!): RawMaterial
   updateRawMaterial(input: UpdateRawMaterialInput!): RawMaterial
-  deleteRawMaterial(createRawMaterialId: ID!): RawMaterial
+  deleteRawMaterial(id: ID!): RawMaterial
 }
 
 input CreateRawMaterialInput {
@@ -54,6 +55,7 @@ input CreateRawMaterialInput {
   unitOfMeasurement: String
   rawMaterialCategory: String
   rawMaterialPrice: Float
+  payments: [PaymentInput]
 }
 
 input UpdateRawMaterialInput {
@@ -67,6 +69,12 @@ input UpdateRawMaterialInput {
   unitOfMeasurement: String
   rawMaterialPrice: Float
   payments: [PaymentInput]
+  totalPaid: Float
+  totalDebt: Float
+  paymentStatus: Boolean
+  date: String
+  rawMaterialTotalPrice: Float
+
 }
 
 input PaymentInput {

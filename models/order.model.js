@@ -127,63 +127,7 @@ orderSchema.pre('save', async function (next) {
     this.orderAutoNumber = `${yearPrefix}${orderAutoNumber.toString().padStart(4, '0')}`;
   }
 
-  const totalPaid = this.orderPayments.reduce(
-    (acc, payment) => acc + (payment.amount || 0),
-    0
-  );
-
-  if (totalPaid === 0) {
-    this.orderPaymentStatus = 'tolanmadi'; // unpaid
-  } else if (totalPaid < this.orderTotalAmount) {
-    this.orderPaymentStatus = 'qismanTolandi'; // partially paid
-  } else {
-    this.orderPaymentStatus = 'tolandi'; // paid
-  }
-
-  this.orderTotalPaid = totalPaid;
-  this.orderTotalDebt = this.orderTotalAmount - totalPaid;
-
   next();
-});
-
-orderSchema.pre('findOneAndUpdate', async function (next) {
-  try {
-    const update = this.getUpdate();
-
-    if (update.$set && update.$set.orderPayments) {
-      const currentDoc = await this.model.findOne(this.getQuery());
-
-      if (currentDoc) {
-        const updatedDoc = {
-          ...currentDoc.toObject(),
-          orderPayments: update.$set.orderPayments,
-        };
-
-        const totalPaid = updatedDoc.orderPayments.reduce(
-          (acc, payment) => acc + (payment.amount || 0),
-          0
-        );
-
-        let orderPaymentStatus;
-        if (totalPaid === 0) {
-          orderPaymentStatus = 'tolanmadi';
-        } else if (totalPaid < updatedDoc.orderTotalAmount) {
-          orderPaymentStatus = 'qismanTolandi';
-        } else {
-          orderPaymentStatus = 'tolandi';
-        }
-
-        this.set({
-          orderPaymentStatus,
-          orderTotalPaid: totalPaid,
-          orderTotalDebt: updatedDoc.orderTotalAmount - totalPaid,
-        });
-      }
-    }
-    next();
-  } catch (error) {
-    next(error);
-  }
 });
 
 orderSchema.plugin(mongoosePaginate);

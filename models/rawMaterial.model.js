@@ -16,7 +16,6 @@ const rawMaterialSchema = new mongoose.Schema(
     phoneNumber: {
       type: String,
       required: false,
-      // bu yerda false bo'ldimi demak typedefda ham false bo'lishi kerak
     },
     rawMaterialName: {
       type: String,
@@ -88,47 +87,6 @@ const rawMaterialSchema = new mongoose.Schema(
   { timestamps: true, versionKey: false }
 );
 
-rawMaterialSchema.pre('save', function (next) {
-  const totalPaid = this.payments.reduce(
-    (acc, payment) => acc + (payment.amount || 0),
-    0
-  );
-  this.totalPaid = totalPaid;
-  this.totalDebt = this.rawMaterialTotalPrice - totalPaid;
-
-  // Calculate rawMaterialTotalPrice
-  this.rawMaterialTotalPrice = this.rawMaterialQuantity * this.rawMaterialPrice;
-
-  next();
-});
-
-rawMaterialSchema.pre('findOneAndUpdate', async function (next) {
-  const update = this.getUpdate();
-  if (update.$set) {
-    if (update.$set.payments) {
-      const currentDoc = await this.model.findOne(this.getQuery());
-      if (currentDoc) {
-        const updatedPayments = update.$set.payments;
-        const totalPaid = updatedPayments.reduce(
-          (acc, payment) => acc + (payment.amount || 0),
-          0
-        );
-        this.set({
-          totalPaid: totalPaid,
-          totalDebt: currentDoc.rawMaterialTotalPrice - totalPaid,
-        });
-      }
-    }
-
-    if (update.$set.rawMaterialQuantity || update.$set.rawMaterialPrice) {
-      const quantity =
-        update.$set.rawMaterialQuantity || currentDoc.rawMaterialQuantity;
-      const price = update.$set.rawMaterialPrice || currentDoc.rawMaterialPrice;
-      this.set('rawMaterialTotalPrice', quantity * price);
-    }
-  }
-  next();
-});
 rawMaterialSchema.plugin(mongoosePaginate);
 const RawMaterial = mongoose.model('RawMaterial', rawMaterialSchema);
 
