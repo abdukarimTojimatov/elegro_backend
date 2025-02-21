@@ -136,7 +136,7 @@ const rawMaterialResolvers = {
           rawMaterial.payments = payments.map((payment) => ({
             paymentType: payment.paymentType,
             amount: payment.amount,
-            date: payment.date || moment().format('YYYY-MM-DD HH:mm'),
+            date: payment.date || moment().format('YYYY-MM-DD'),
           }));
         }
 
